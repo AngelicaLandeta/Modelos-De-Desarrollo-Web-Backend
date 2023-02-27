@@ -1,25 +1,34 @@
-from typing import Union
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+
+from routers import mainA,mainB,mainC,mainD,mainE,mainF
+
 app=FastAPI()
+app.include_router(mainA.router)
+app.include_router(mainB.router)
+app.include_router(mainC.router)
+app.include_router(mainD.router)
+app.include_router(mainE.router)
+app.include_router(mainF.router)
+
 
 class Country(BaseModel):
     id:int
-    code:Union[str,None]=str
-    name:Union[str,None]=str
+    code:str
+    name:str
     continent:str
-    region:Union[str,None]=str
-    surface_area:Union[int,None]=int
-    independence_year:Union[str,None]=str
-    population:Union[int,None]=int
-    life_expectancy:Union[float,None]=float
-    gnp:Union[int,None]=int
-    gnp_old:Union[float,None]=float
-    local_name:Union[str,None]=str
-    government_form:Union[str,None]=str
-    head_of_state:Union[str,None]=str
-    capital:Union[int,None]=int
-    codetwo:Union[str,None]=str
+    region:str
+    surface_area:int
+    independence_year:str
+    population:int
+    life_expectancy:float
+    gnp:int
+    gnp_old:float
+    local_name:str
+    government_form:str
+    head_of_state:str
+    capital:int
+    codetwo:str
 
 
 CountryList=[
@@ -265,58 +274,6 @@ Country(id= 239,code= "ZMB", name= "Zambia",continent= "Africa",region= "Eastern
 Country(id= 240,code= "ZWE", name= "Zimbabwe",continent= "Africa",region= "Eastern Africa",surface_area= 390757,independence_year= 1980,population= 11669000,life_expectancy= 37.8,gnp= 5951,gnp_old= 8670,local_name= "Zimbabwe",government_form= "Republic",head_of_state= "Robert G. Mugabe",capital= 4068,codetwo= "ZW")
 ]
 
-@app.get("/continent/",status_code=200)
-async def continents():
+@app.get("/list/",status_code=200)
+async def list():
     return (CountryList)
-
-@app.get("/continent/{id}",status_code=200) #Read
-async def continents(id:int):
-    continents=filter(lambda continente:continente.id == id, CountryList)
-    try:
-        return list(continents)[0]
-    except:
-        raise HTTPException(status_code=404,detail="No se ha encontrado la informacion")
-
-        
-#"No se ha encontrado la informacion"
-@app.post("/continent/",status_code=201) #Create
-async def continents(continent:Country):
-
-    for index, guardar in enumerate(CountryList):
-        if guardar.id == continent.id:
-            raise HTTPException(status_code=404,detail="Los datos ya existe")
-    else:
-        CountryList.append(continent)
-        return {
-            "id=": continent.id,
-            "continent=" : continent.continent
-        }
-
-@app.put("/continent/",status_code=204) #Update
-async def continents(continent:Country):
-    
-    found=False      
-    
-    for index, saved in enumerate(CountryList):
-        if saved.id == continent.id:
-           CountryList[index] = continent  
-           found=True
-           
-    if not found:
-        raise HTTPException(status_code=404,detail="No se ha actualizado los datos")
-    else:
-        return continent
-
-@app.delete("/continent/{id}",status_code=204) #Delete
-async def continents(id:int):
-    
-    found=False      
-    
-    for index, saved in enumerate(CountryList):
-        if saved.id ==id:  
-           del CountryList[index] 
-           found=True
-           return "El registro se ha eliminado"
-       
-    if not found:
-        raise HTTPException(status_code=404,detail="No se ha eliminado el usuario")

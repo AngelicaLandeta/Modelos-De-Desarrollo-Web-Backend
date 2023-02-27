@@ -1,7 +1,8 @@
 from typing import Union
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,APIRouter 
 from pydantic import BaseModel
-app=FastAPI()
+
+router=APIRouter()
 
 class Country(BaseModel):
     id:int
@@ -265,12 +266,12 @@ Country(id= 239,code= "ZMB", name= "Zambia",continent= "Africa",region= "Eastern
 Country(id= 240,code= "ZWE", name= "Zimbabwe",continent= "Africa",region= "Eastern Africa",surface_area= 390757,independence_year= 1980,population= 11669000,life_expectancy= 37.8,gnp= 5951,gnp_old= 8670,local_name= "Zimbabwe",government_form= "Republic",head_of_state= "Robert G. Mugabe",capital= 4068,codetwo= "ZW")
 ]
 
-@app.get("/continent/",status_code=200)
+@router.get("/continente/",status_code=200)
 async def continents():
     return (CountryList)
 
 
-@app.get("/{continent}/",status_code=200) #Read
+@router.get("/{continent}/",status_code=200) #Read
 async def continents(continent:str):
     regions=filter(lambda region:region.continent == continent, CountryList)
     try:
@@ -279,7 +280,7 @@ async def continents(continent:str):
         raise HTTPException(status_code=404,detail="No se ha encontrado la informacion")
 
 
-@app.post("/continent/",status_code=201) #Create
+@router.post("/continente/",status_code=201) #Create
 async def continents(continent:Country):
 
     for index, guardar in enumerate(CountryList):
@@ -293,7 +294,7 @@ async def continents(continent:Country):
             "region" : continent.region
         }
 
-@app.put("/continent/",status_code=204) #Update
+@router.put("/continente/",status_code=204) #Update
 async def continents(continent:Country):
     
     found=False      
@@ -308,7 +309,7 @@ async def continents(continent:Country):
     else:
         return continent
 
-@app.delete("/{continent}/{id}",status_code=204) #Delete
+@router.delete("/{continent}/{id}",status_code=204) #Delete
 async def continents(continent:str,id:int):
     
     found=False      

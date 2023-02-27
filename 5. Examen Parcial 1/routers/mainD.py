@@ -1,13 +1,14 @@
 from typing import Union
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,APIRouter 
 from pydantic import BaseModel
-app=FastAPI()
+
+router=APIRouter()
 
 class Country(BaseModel):
     id:int
     code:Union[str,None]=str
-    name:Union[str,None]=str
-    continent:str
+    name:str
+    continent:Union[str,None]=str
     region:str
     surface_area:Union[int,None]=int
     independence_year:Union[str,None]=str
@@ -265,41 +266,40 @@ Country(id= 239,code= "ZMB", name= "Zambia",continent= "Africa",region= "Eastern
 Country(id= 240,code= "ZWE", name= "Zimbabwe",continent= "Africa",region= "Eastern Africa",surface_area= 390757,independence_year= 1980,population= 11669000,life_expectancy= 37.8,gnp= 5951,gnp_old= 8670,local_name= "Zimbabwe",government_form= "Republic",head_of_state= "Robert G. Mugabe",capital= 4068,codetwo= "ZW")
 ]
 
-@app.get("/continent/region/",status_code=200)
-async def regions():
+@router.get("/region",status_code=200)
+async def countries():
     return (CountryList)
 
-@app.get("/continent/region/{id}",status_code=200) #Read
-async def regions(id:int):
-    regions=filter(lambda regiones:regiones.id == id, CountryList)
+@router.get("/{region}",status_code=200) #Read
+async def countries(region:str):
+    regions=filter(lambda regiones:regiones.region == region, CountryList)
     try:
-        return list(regions)[0]
+        return list(regions)
     except:
         raise HTTPException(status_code=404,detail="No se ha encontrado la informacion")
 
-@app.post("/continent/region/",status_code=201) #Create
-async def regions(region:Country):
+@router.post("/region/",status_code=201) #Create
+async def countries(region:Country):
 
     for index, guardar in enumerate(CountryList):
         if guardar.id == region.id:
-            raise HTTPException(status_code=404,detail="Los datos ya existe")
+                raise HTTPException(status_code=404,detail="Los datos ya existen")
     else:
         CountryList.append(region)
         return {
             "id=": region.id,
-            "continent=" : region.continent,
-            "region" : region.region
+            "region" : region.region,
+            "name" : region.name
         }
 
-
-@app.put("/continent/region/",status_code=204) #Update
+@router.put("/region/",status_code=204) #Update
 async def regions(region:Country):
     
     found=False      
     
     for index, saved in enumerate(CountryList):
         if saved.id == region.id:
-           CountryList[index] = region
+           CountryList[index] = region  
            found=True
            
     if not found:
@@ -307,13 +307,13 @@ async def regions(region:Country):
     else:
         return region
 
-@app.delete("/continent/region/{id}",status_code=204) #Delete
-async def regions(id:int):
+@router.delete("/{region}/{id}/",status_code=204) #Delete
+async def regions(region:str,id:int):
     
     found=False      
     
     for index, saved in enumerate(CountryList):
-        if saved.id ==id:  
+        if saved.id ==id and saved.region==region:  
            del CountryList[index] 
            found=True
            return "El registro se ha eliminado"
